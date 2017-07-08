@@ -1,0 +1,43 @@
+---
+title: "MyMap"
+author: "Wei Li"
+date: "7/5/2017"
+output: html_document
+---
+
+
+```{r,echo = FALSE, results='asis', message=FALSE, warning=FALSE}
+
+library(leaflet)
+library(rgdal)
+download.file(file.path('http://www.naturalearthdata.com/http/',
+                        'www.naturalearthdata.com/download/50m/cultural',
+                        'ne_50m_admin_0_countries.zip'), 
+              f <- tempfile())
+unzip(f, exdir=tempdir())
+world <- readOGR(tempdir(), 'ne_50m_admin_0_countries', encoding='UTF-8')
+my_country <- c( "Canada")
+data_map <- data.frame(provinces = c("Newfoundland and Labrador", "Prince Edward Island", "Nova Scotia", "New Brunswick", "Quebec", "Ontario", "Manitoba", "Saskatchewan", "Alberta", "British Columbia"),
+umEmpRate = c(12.6, 6.9, 7.9, 6.8, 5.6, 6.1, 4.8, 5.8, 7.2, 4.5),
+lat = c(48,53,45,45,47,44,50,50,54,48.4284),
+lng = c(-53,-56,-64,-67,-71,-79,-97,-105,-113,-123.3656))
+
+data_map$provAndNum <- paste(sep = "<br/>", 
+                             data_map$provinces, 
+                             data_map$umEmpRate)
+
+
+data_map %>% 
+ leaflet() %>%
+ setView(-90, 55, zoom =3)  %>%
+  addPolygons(data=subset(world, name %in% my_country), weight=1) %>%
+  addTiles() %>%
+  addMarkers(popup = data_map$provAndNum) %>%
+  addPopups(data_map$lng[7], data_map$lat[7]+10, "Canada <br/> <b><a href='http://www.stats.gov.nl.ca/statistics/Labour/PDF/UnempRate_Monthly.pdf'>Unemployment rate </a></b> <br/> in june 2017",options =    popupOptions(closeButton = FALSE) ) %>%    
+  addCircleMarkers(weight=1, radius = data_map$umEmpRate )  
+
+
+```
+
+
+
